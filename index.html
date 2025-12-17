@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kỹ Nghệ Máy Tính - Liquid Light OS</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 20px 50px rgba(31, 38, 135, 0.08);
+        }
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            animation: float 10s infinite ease-in-out;
+        }
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(20px, -20px); }
+        }
+    </style>
+</head>
+<body class="min-h-screen relative flex flex-col items-center pb-40 overflow-x-hidden text-gray-800 bg-[#f8fafc] selection:bg-pink-300 selection:text-white">
+
+    <!-- DYNAMIC BACKGROUND -->
+    <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <div class="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50"></div>
+        <div class="orb w-[500px] h-[500px] bg-purple-300/30 top-[-10%] left-[-10%] animate-pulse"></div>
+        <div class="orb w-[600px] h-[600px] bg-sky-300/30 bottom-[-10%] right-[-10%]" style="animation-duration: 12s"></div>
+        <div class="orb w-[300px] h-[300px] bg-pink-300/20 top-[40%] left-[60%]" style="animation-duration: 8s"></div>
+    </div>
+
+    <!-- HEADER -->
+    <div class="sticky top-4 z-40 w-full max-w-2xl mb-8 px-4 transition-all duration-300">
+        <div class="glass-panel rounded-[2rem] p-3 flex flex-col md:flex-row md:justify-between md:items-center gap-4 relative overflow-hidden ring-1 ring-white/50">
+            <!-- Shine -->
+            <div class="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent pointer-events-none"></div>
+
+            <div class="flex items-center gap-3 pl-2 relative z-10">
+                <div class="p-2.5 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full shadow-md text-white ring-4 ring-white/50">
+                    <i data-lucide="brain" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-gray-800 tracking-wide">Kỹ Nghệ Máy Tính</h1>
+                    <p class="text-[10px] text-indigo-500 font-bold uppercase tracking-wider">Liquid Light OS</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 relative z-10 no-scrollbar">
+                <input type="file" id="fileInput" class="hidden" accept=".json">
+                
+                <button onclick="document.getElementById('fileInput').click()" class="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-gray-600 shadow-sm transition-all hover:scale-105 active:scale-95 bg-white border border-gray-100 hover:bg-gray-50 hover:text-indigo-600 hover:shadow-md">
+                    <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                    <span>Nhập</span>
+                </button>
+
+                <button onclick="exportData()" class="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-gray-600 shadow-sm transition-all hover:scale-105 active:scale-95 bg-white border border-gray-100 hover:bg-gray-50 hover:text-blue-600 hover:shadow-md">
+                    <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                    <span>Xuất</span>
+                </button>
+
+                <button onclick="resetApp()" class="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-red-500 shadow-sm transition-all hover:scale-105 active:scale-95 bg-white border border-red-100 hover:bg-red-50 hover:shadow-md">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    <span>Reset</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Pill -->
+        <div class="absolute -bottom-5 left-1/2 transform -translate-x-1/2 z-50">
+             <div class="flex items-center gap-4 bg-white/90 backdrop-blur-md px-6 py-1.5 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-white text-xs font-bold text-gray-600">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-indigo-500">CARD</span>
+                  <span id="progress-text" class="font-mono text-gray-800">1 / 10</span>
+                </div>
+                <div class="w-px h-3 bg-gray-300"></div>
+                <div class="flex items-center gap-3">
+                  <span class="text-green-600 flex items-center gap-1"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> <span id="score-correct">0</span></span>
+                  <span class="text-gray-400 flex items-center gap-1"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> <span id="score-wrong">0</span></span>
+                </div>
+             </div>
+        </div>
+    </div>
+
+    <!-- MAIN CARD -->
+    <div class="w-full max-w-2xl px-4 relative z-10 mt-6">
+        <div class="glass-card rounded-[2.5rem] overflow-hidden min-h-[500px] flex flex-col transition-all duration-300 relative group ring-1 ring-white/60">
+            
+            <!-- Inner Glow -->
+            <div class="absolute inset-0 shadow-[inset_0_0_60px_rgba(255,255,255,0.5)] pointer-events-none rounded-[2.5rem]"></div>
+
+            <!-- Topic Header -->
+            <div class="bg-gradient-to-r from-white/40 to-transparent px-8 py-5 border-b border-white/50 flex justify-between items-center relative">
+                <span id="card-category" class="text-indigo-600 font-bold text-xs uppercase tracking-[0.2em] flex items-center gap-2 drop-shadow-sm bg-white/50 px-3 py-1 rounded-full border border-white/60">
+                    <i data-lucide="award" class="w-4 h-4"></i>
+                    Thế giới quan
+                </span>
+            </div>
+
+            <!-- Question Section -->
+            <div class="p-8 flex-grow relative">
+                <h2 id="card-question" class="text-xl md:text-2xl font-bold text-slate-800 mb-8 leading-snug drop-shadow-sm">
+                    Câu hỏi đang tải...
+                </h2>
+
+                <div id="options-container" class="space-y-4">
+                    <!-- Options will be injected here -->
+                </div>
+            </div>
+
+            <!-- Explanation Section (Hidden by default) -->
+            <div id="explanation-section" class="hidden bg-white/50 backdrop-blur-xl border-t border-white/60 p-8 animate-in fade-in slide-in-from-bottom-8 duration-500 relative">
+                <div id="result-header" class="mb-6 flex items-center gap-3 font-black text-xl tracking-tight">
+                    <!-- Result text injected here -->
+                </div>
+
+                <div class="space-y-4 text-gray-700 leading-relaxed mb-4">
+                    <div class="bg-white p-5 rounded-2xl border border-green-100 shadow-[0_4px_15px_rgba(74,222,128,0.1)] relative overflow-hidden group hover:shadow-md transition-all">
+                        <div class="absolute top-0 left-0 w-1 h-full bg-green-400"></div>
+                        <p class="font-bold text-green-600 mb-2 uppercase text-[10px] tracking-widest flex items-center gap-2">
+                            <i data-lucide="brain" class="w-3 h-3"></i> Giải thích chi tiết
+                        </p>
+                        <p id="explanation-correct" class="text-base font-normal">...</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-red-100 shadow-[0_4px_15px_rgba(248,113,113,0.1)] relative overflow-hidden group hover:shadow-md transition-all">
+                        <div class="absolute top-0 left-0 w-1 h-full bg-red-400"></div>
+                        <p class="font-bold text-red-600 mb-2 uppercase text-[10px] tracking-widest flex items-center gap-2">
+                            <i data-lucide="x-circle" class="w-3 h-3"></i> Tại sao sai?
+                        </p>
+                        <p id="explanation-incorrect" class="whitespace-pre-line text-sm text-gray-600 font-normal">...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RATING BAR (Sticky Bottom) -->
+    <div id="rating-bar" class="hidden fixed bottom-6 z-50 w-full px-4 flex justify-center animate-in slide-in-from-bottom-10 fade-in duration-500">
+        <div class="backdrop-blur-xl bg-white/90 border border-white/80 shadow-[0_10px_40px_rgba(0,0,0,0.1)] rounded-[2rem] p-3 flex flex-col gap-3 max-w-md w-full ring-1 ring-black/5">
+            <p class="text-center text-gray-400 text-[10px] font-bold uppercase tracking-[0.3em]">Mức độ ghi nhớ</p>
+            <div class="grid grid-cols-4 gap-3">
+                <button onclick="handleRating('again')" class="group flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100 hover:bg-red-50 hover:border-red-200 hover:shadow-md transition-all duration-300">
+                    <i data-lucide="rotate-ccw" class="w-5 h-5 mb-1 text-red-400 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-bold text-xs text-red-600">Quên</span>
+                    <span class="text-[9px] opacity-60 font-mono text-gray-400">&lt;1m</span>
+                </button>
+                <button onclick="handleRating('hard')" class="group flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100 hover:bg-orange-50 hover:border-orange-200 hover:shadow-md transition-all duration-300">
+                    <i data-lucide="frown" class="w-5 h-5 mb-1 text-orange-400 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-bold text-xs text-orange-600">Khó</span>
+                    <span class="text-[9px] opacity-60 font-mono text-gray-400">6m</span>
+                </button>
+                <button onclick="handleRating('good')" class="group flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100 hover:bg-green-50 hover:border-green-200 hover:shadow-md transition-all duration-300">
+                    <i data-lucide="smile" class="w-5 h-5 mb-1 text-green-500 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-bold text-xs text-green-600">Tốt</span>
+                    <span class="text-[9px] opacity-60 font-mono text-gray-400">10m</span>
+                </button>
+                <button onclick="handleRating('easy')" class="group flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-gray-100 hover:bg-blue-50 hover:border-blue-200 hover:shadow-md transition-all duration-300">
+                    <i data-lucide="zap" class="w-5 h-5 mb-1 text-blue-500 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-bold text-xs text-blue-600">Dễ</span>
+                    <span class="text-[9px] opacity-60 font-mono text-gray-400">4d</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-8 text-center text-gray-400 text-xs font-medium relative z-10">
+        Design by Atsuki Nguyễn💐🌸💮💮🪷🌻
+    </div>
+
+    <!-- LOGIC SCRIPT -->
+    <script>
+        // Dữ liệu ban đầu
+        const INITIAL_DECK = [
+            {
+                        id: 1,
+        category: "Tin học đại cương",
+        question: "Bảng mã ASCII dùng để mã hoá...",
+        options: [
+            { id: 'A', text: "Ký tự" },
+            { id: 'B', text: "Âm thanh" },
+            { id: 'C', text: "Hình ảnh" },
+            { id: 'D', text: "Video" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Chính xác! ASCII (American Standard Code for Information Interchange) là bảng mã chuẩn dùng để biểu diễn các ký tự văn bản trong máy tính.",
+            incorrect: "ASCII chỉ dùng cho ký tự. Âm thanh, hình ảnh và video sử dụng các định dạng mã hóa phức tạp hơn như MP3, JPEG, MP4."
+        }
+    },
+    {
+        id: 2,
+        category: "Tin học đại cương",
+        question: "Hệ đếm thập phân sử dụng chữ số cơ sở nào?",
+        options: [
+            { id: 'A', text: "Từ 0 đến 9" },
+            { id: 'B', text: "Từ A đến Z" },
+            { id: 'C', text: "Từ a đến z" },
+            { id: 'D', text: "Từ 0 đến 7" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Đúng rồi! Hệ thập phân (cơ số 10) sử dụng 10 chữ số từ 0 đến 9 để biểu diễn giá trị.",
+            incorrect: "Từ 0-7 là hệ bát phân (Octal). Chữ cái thường dùng trong hệ thập lục phân (Hexadecimal) hoặc mã hóa văn bản."
+        }
+    },
+    {
+        id: 3,
+        category: "Kiến trúc máy tính",
+        question: "... là tất cả các phần xét về mặt vật lý của một máy tính.",
+        options: [
+            { id: 'A', text: "Phần cứng" },
+            { id: 'B', text: "Thiết bị" },
+            { id: 'C', text: "Thiết bị ngoại vi" },
+            { id: 'D', text: "Tất cả ứng dụng" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Chính xác! Phần cứng (Hardware) bao gồm tất cả các linh kiện vật lý hữu hình như bo mạch, màn hình, bàn phím, v.v.",
+            incorrect: "Thiết bị ngoại vi chỉ là một phần của phần cứng. Ứng dụng thuộc về phần mềm."
+        }
+    },
+    {
+        id: 4,
+        category: "Kiến trúc máy tính",
+        question: "Trong biểu diễn số thực ở dạng dấu chấm động chính xác đơn 32 bit, phần lẻ (mantissa) được biểu diễn bao nhiêu bit?",
+        options: [
+            { id: 'A', text: "1" },
+            { id: 'B', text: "8" },
+            { id: 'C', text: "23" },
+            { id: 'D', text: "32" }
+        ],
+        correctId: "C",
+        explanation: {
+            correct: "Chuẩn IEEE 754 (32 bit) gồm: 1 bit dấu, 8 bit mũ, và 23 bit phần lẻ (mantissa).",
+            incorrect: "1 bit là bit dấu. 8 bit là phần mũ (exponent). 32 bit là tổng độ dài."
+        }
+    },
+    {
+        id: 5,
+        category: "Lịch sử máy tính",
+        question: "Tên gọi của máy vi tính điện tử đầu tiên là:",
+        options: [
+            { id: 'A', text: "PC Computer" },
+            { id: 'B', text: "UNIVAC" },
+            { id: 'C', text: "Macintosh" },
+            { id: 'D', text: "ENIAC" }
+        ],
+        correctId: "D",
+        explanation: {
+            correct: "ENIAC (1945) thường được coi là máy tính điện tử đa năng đầu tiên trên thế giới.",
+            incorrect: "PC, Macintosh ra đời muộn hơn rất nhiều. UNIVAC là máy tính thương mại đầu tiên nhưng ra đời sau ENIAC."
+        }
+    },
+    {
+        id: 6,
+        category: "Kiến trúc máy tính",
+        question: "Tất cả các thiết bị sau đều có thể là thiết bị vào ngoại trừ:",
+        options: [
+            { id: 'A', text: "Máy Scan" },
+            { id: 'B', text: "Chuột" },
+            { id: 'C', text: "Bàn phím" },
+            { id: 'D', text: "Máy in" }
+        ],
+        correctId: "D",
+        explanation: {
+            correct: "Đúng! Máy in là thiết bị RA (Output) dùng để xuất dữ liệu ra giấy.",
+            incorrect: "Máy Scan, Chuột và Bàn phím đều là thiết bị dùng để đưa dữ liệu VÀO máy tính (Input)."
+        }
+    },
+    {
+        id: 7,
+        category: "Số học máy tính",
+        question: "Cho số 11011011 (hệ 2) biểu diễn dạng số bù 1, giá trị thập phân tương ứng là:",
+        options: [
+            { id: 'A', text: "36" },
+            { id: 'B', text: "-36" },
+            { id: 'C', text: "-90" },
+            { id: 'D', text: "90" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "Bit đầu là 1 (số âm). Đảo ngược các bit còn lại: 00100100 -> 32 + 4 = 36. Vậy kết quả là -36.",
+            incorrect: "Đây là số âm (do bit dấu = 1). Giá trị tuyệt đối tính bằng cách đảo bit (Bù 1) ra 36, nên không phải 90 hay -90."
+        }
+    },
+    {
+        id: 8,
+        category: "Tin học đại cương",
+        question: "Một Kilobyte là bao nhiêu bit?",
+        options: [
+            { id: 'A', text: "1000" },
+            { id: 'B', text: "1024" },
+            { id: 'C', text: "8192" },
+            { id: 'D', text: "8000" }
+        ],
+        correctId: "C",
+        explanation: {
+            correct: "Tính toán: 1 KB = 1024 Bytes. 1 Byte = 8 Bits. Vậy 1 KB = 1024 * 8 = 8192 Bits.",
+            incorrect: "1024 là số Bytes, không phải số Bits. Cần nhân với 8."
+        }
+    },
+    {
+        id: 9,
+        category: "Số học máy tính",
+        question: "Kết quả của phép toán cộng hai số nhị phân: 11101 + 11001",
+        options: [
+            { id: 'A', text: "110110" },
+            { id: 'B', text: "100010" },
+            { id: 'C', text: "1000001" },
+            { id: 'D', text: "100111" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Phép cộng: 1+1=0 nhớ 1. 0+0+1=1. 1+0=1. 1+1=0 nhớ 1. 1+1+1=1 nhớ 1. Kết quả: 110110.",
+            incorrect: "Hãy kiểm tra lại quy tắc cộng có nhớ: 1+1=10 (ghi 0 nhớ 1)."
+        }
+    },
+    {
+        id: 10,
+        category: "Hệ đếm",
+        question: "Số 8654321 có thể chấp nhận là số biểu diễn trong các hệ đếm:",
+        options: [
+            { id: 'A', text: "Hệ 2" },
+            { id: 'B', text: "Hệ 8" },
+            { id: 'C', text: "Hệ 16" },
+            { id: 'D', text: "Cả B và C" }
+        ],
+        correctId: "C",
+        explanation: {
+            correct: "Số này chứa chữ số '8'. Hệ 2 (0-1) và Hệ 8 (0-7) không chứa '8'. Chỉ hệ 16 (0-9, A-F) hoặc hệ 10 mới chấp nhận.",
+            incorrect: "Hệ 8 chỉ dùng các số từ 0 đến 7. Hệ 2 chỉ dùng 0 và 1."
+        }
+    },
+    {
+        id: 11,
+        category: "Hệ đếm",
+        question: "So sánh A (Hệ 16) = AF3 và B (Hệ 8) = 353. Chọn đáp án đúng:",
+        options: [
+            { id: 'A', text: "A < B" },
+            { id: 'B', text: "A = B" },
+            { id: 'C', text: "A > B" },
+            { id: 'D', text: "Tất cả sai" }
+        ],
+        correctId: "C",
+        explanation: {
+            correct: "Đổi ra hệ 10: A = 10*16² + 15*16 + 3 = 2803. B = 3*8² + 5*8 + 3 = 235. Rõ ràng A > B.",
+            incorrect: "Giá trị của A (hàng nghìn) lớn hơn rất nhiều so với B (hàng trăm)."
+        }
+    },
+    {
+        id: 12,
+        category: "Số học máy tính",
+        question: "Biểu diễn số thực 12.625 dưới dạng chấm động chính xác đơn 32 bit (IEEE 754):",
+        options: [
+            { id: 'A', text: "01000001 01001010 00000000 00000000" },
+            { id: 'B', text: "11000001 11001010 00000000 00000000" },
+            { id: 'C', text: "11000000 01100101 00000000 00000000" },
+            { id: 'D', text: "01000001 11100101 00000000 00000000" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "12.625 = 1100.101 = 1.100101 x 2^3. Mũ: 127+3=130 (10000010). Mantissa: 100101... Ghép lại: 0 10000010 1001010... (Khớp với Hex 41 4A...).",
+            incorrect: "Các phương án khác sai ở bit dấu (số âm) hoặc tính sai phần mũ/mantissa."
+        }
+    },
+    {
+        id: 13,
+        category: "Số học máy tính",
+        question: "Trong số học nhị phân, 0 - 1 - 1 bằng bao nhiêu?",
+        options: [
+            { id: 'A', text: "bằng 1 mượn 1" },
+            { id: 'B', text: "bằng 1" },
+            { id: 'C', text: "bằng 0 mượn 1" },
+            { id: 'D', text: "bằng 0" }
+        ],
+        correctId: "C",
+        explanation: {
+            correct: "0 - 1 = 1 (mượn 1). Tiếp tục lấy kết quả đó trừ 1: 1 - 1 = 0. Tổng kết: Bằng 0 và vẫn còn nợ (mượn) 1 từ bước đầu.",
+            incorrect: "Phép trừ này tương đương 0 - 2 = -2 (trong binary 2 bit là 10, tức là 0 nhớ 1)."
+        }
+    },
+    {
+        id: 14,
+        category: "Kiến trúc máy tính",
+        question: "Công thức biểu diễn giá trị số thực dạng chấm động chính xác đơn 32 bit:",
+        options: [
+            { id: 'A', text: "(-1)^s * 1.f * 2^(E-127)" },
+            { id: 'B', text: "(-1)^s * 1.f * 2^(127-E)" },
+            { id: 'C', text: "(-1)^s * 1.f * 2^E" },
+            { id: 'D', text: "(-1)^s * 1.f * 2^127" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Chuẩn IEEE 754 dùng Bias (độ lệch) là 127 cho 32-bit. Công thức mũ thực là E - 127.",
+            incorrect: "Bias là 127 nên phải trừ 127, không phải lấy 127 trừ E hoặc dùng E trực tiếp."
+        }
+    },
+    {
+        id: 15,
+        category: "Số học máy tính",
+        question: "Trong số học nhị phân, 1 + 1 bằng bao nhiêu?",
+        options: [
+            { id: 'A', text: "2" },
+            { id: 'B', text: "1 nhớ 1" },
+            { id: 'C', text: "0 nhớ 1" },
+            { id: 'D', text: "1 nhớ 0" }
+        ],
+        correctId: "C",
+        explanation: {
+            correct: "Trong hệ nhị phân 1 + 1 = 10 (đọc là một-không). Tức là viết 0 nhớ 1 sang hàng tiếp theo.",
+            incorrect: "Số 2 không tồn tại trong hệ nhị phân (chỉ có 0 và 1)."
+        }
+    },
+    {
+        id: 16,
+        category: "Số học máy tính",
+        question: "Kết quả của phép toán: 11110011 - 11110 (Hệ 2)",
+        options: [
+            { id: 'A', text: "Không thực hiện được" },
+            { id: 'B', text: "11010111" },
+            { id: 'C', text: "11010101" },
+            { id: 'D', text: "01010101" }
+        ],
+        correctId: "C",
+        explanation: {
+            correct: "Thực hiện trừ từng bit từ phải sang trái: 1-0=1, 1-1=0, 0-1=1(mượn), 0-1-1(mượn)=0(mượn), 1-1-1(mượn)=1(mượn), 1-1=0... Kết quả 11010101.",
+            incorrect: "Tính toán cẩn thận các bước mượn (borrow) trong phép trừ nhị phân."
+        }
+    },
+    {
+        id: 17,
+        category: "Hệ đếm",
+        question: "Chuyển số nhị phân 11011011 sang hệ thập phân:",
+        options: [
+            { id: 'A', text: "216" },
+            { id: 'B', text: "219" },
+            { id: 'C', text: "215" },
+            { id: 'D', text: "214" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "128 + 64 + 0 + 16 + 8 + 0 + 2 + 1 = 219.",
+            incorrect: "Tổng các trọng số của vị trí bit 1 là: 128, 64, 16, 8, 2, 1."
+        }
+    },
+    {
+        id: 18,
+        category: "Hệ đếm",
+        question: "Số A hệ 8 là 0117. Giá trị hệ 10 là bao nhiêu?",
+        options: [
+            { id: 'A', text: "78" },
+            { id: 'B', text: "79" },
+            { id: 'C', text: "85" },
+            { id: 'D', text: "Sai cấu trúc" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "1*64 + 1*8 + 7*1 = 64 + 8 + 7 = 79.",
+            incorrect: "Chuyển đổi từ hệ 8: Hàng trăm nhân 64, hàng chục nhân 8, hàng đơn vị nhân 1."
+        }
+    },
+    {
+        id: 19,
+        category: "Số học máy tính",
+        question: "Kết quả phép nhân nhị phân: 1110 x 1101",
+        options: [
+            { id: 'A', text: "11001101" },
+            { id: 'B', text: "10110110" },
+            { id: 'C', text: "11001111" },
+            { id: 'D', text: "01001111" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "1110 (14) * 1101 (13) = 182. Đổi 182 sang nhị phân là 10110110.",
+            incorrect: "Có thể đổi sang thập phân nhân cho nhanh rồi đổi ngược lại nhị phân để tránh nhầm lẫn."
+        }
+    },
+    {
+        id: 20,
+        category: "Số học máy tính",
+        question: "Phép chia nhị phân: 10010111 / 1111",
+        options: [
+            { id: 'A', text: "1111" },
+            { id: 'B', text: "1010 dư 1" },
+            { id: 'C', text: "1010" },
+            { id: 'D', text: "1110" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "10010111 (151) chia 1111 (15). 151 / 15 = 10 dư 1. 10 thập phân là 1010 nhị phân.",
+            incorrect: "Hãy đổi sang thập phân để kiểm tra: 151 chia 15 được 10 và dư 1."
+        }
+    },
+    {
+        id: 21,
+        category: "Tin học đại cương",
+        question: "Một byte có thể lưu một ... của dữ liệu.",
+        options: [
+            { id: 'A', text: "Bit" },
+            { id: 'B', text: "Số nhị phân" },
+            { id: 'C', text: "Ký tự (ASCII)" },
+            { id: 'D', text: "Không đáp án đúng" }
+        ],
+        correctId: "C",
+        explanation: {
+            correct: "Trong bảng mã ASCII chuẩn, 1 ký tự được mã hóa bằng 8 bit, tương đương 1 Byte.",
+            incorrect: "1 Byte gồm 8 bit. Nó lưu được nhiều hơn 1 bit đơn lẻ."
+        }
+    },
+    {
+        id: 22,
+        category: "Phần cứng",
+        question: "Thiết bị nào sau đây KHÔNG có chức năng lưu trữ?",
+        options: [
+            { id: 'A', text: "Ổ cứng HDD" },
+            { id: 'B', text: "Máy in" },
+            { id: 'C', text: "Ổ SSD" },
+            { id: 'D', text: "Đĩa CD" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "Máy in là thiết bị xuất (Output device), không dùng để lưu trữ dữ liệu lâu dài.",
+            incorrect: "HDD, SSD, CD đều là các bộ nhớ ngoài dùng để lưu trữ."
+        }
+    },
+    {
+        id: 23,
+        category: "Hệ đếm",
+        question: "Số nào sau đây KHÔNG phải số nhị phân?",
+        options: [
+            { id: 'A', text: "10010101" },
+            { id: 'B', text: "11000100" },
+            { id: 'C', text: "F0101A0" },
+            { id: 'D', text: "1000000" }
+        ],
+        correctId: "C",
+        explanation: {
+            correct: "Số nhị phân chỉ gồm 0 và 1. 'F' và 'A' là các chữ số của hệ thập lục phân (Hex).",
+            incorrect: "Các phương án còn lại chỉ chứa 0 và 1 nên hợp lệ."
+        }
+    },
+    {
+        id: 24,
+        category: "Hệ đếm",
+        question: "Số 125572 có thể là biểu diễn của hệ đếm nào?",
+        options: [
+            { id: 'A', text: "Hệ 2" },
+            { id: 'B', text: "Hệ 8" },
+            { id: 'C', text: "Hệ 16" },
+            { id: 'D', text: "Hệ 8 hoặc 16 đều được" }
+        ],
+        correctId: "D",
+        explanation: {
+            correct: "Số này chứa các chữ số từ 0-7. Nó hợp lệ cho cả hệ 8 (Octal) và hệ 16 (Hex).",
+            incorrect: "Hệ 2 chỉ có 0,1. Hệ 8 dùng 0-7. Hệ 16 dùng 0-9, A-F."
+        }
+    },
+    {
+        id: 25,
+        category: "Số học máy tính",
+        question: "Số bù 1 được tạo ra bằng cách...",
+        options: [
+            { id: 'A', text: "Cộng thêm 1" },
+            { id: 'B', text: "Đảo các bit của số dương" },
+            { id: 'C', text: "Trừ đi 1" },
+            { id: 'D', text: "Giữ nguyên" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "Quy tắc tạo số bù 1: Đảo ngược tất cả các bit (0 thành 1, 1 thành 0).",
+            incorrect: "Cộng thêm 1 là bước chuyển từ Bù 1 sang Bù 2."
+        }
+    },
+    {
+        id: 26,
+        category: "Số học máy tính",
+        question: "Biểu diễn số -35 (hệ 10) dưới dạng số bù 1 (8 bit):",
+        options: [
+            { id: 'A', text: "11000111" },
+            { id: 'B', text: "11011100" },
+            { id: 'C', text: "01100111" },
+            { id: 'D', text: "11100101" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "+35 = 00100011. Đảo bit để lấy bù 1 -> 11011100.",
+            incorrect: "Hãy viết số dương 35 ra nhị phân trước, sau đó đảo toàn bộ bit."
+        }
+    },
+    {
+        id: 27,
+        category: "Số học máy tính",
+        question: "Bit dấu trong số có dấu được biểu diễn thế nào?",
+        options: [
+            { id: 'A', text: "Bit 1 là âm" },
+            { id: 'B', text: "Bit 0 là dương" },
+            { id: 'C', text: "Bit trọng số cao nhất (MSB) là dấu" },
+            { id: 'D', text: "Tất cả đều đúng" }
+        ],
+        correctId: "D",
+        explanation: {
+            correct: "Chính xác. Bit ngoài cùng bên trái (MSB) quy định dấu: 0 là Dương (+), 1 là Âm (-).",
+            incorrect: "Các ý A, B, C đều là các quy tắc đúng của bit dấu."
+        }
+    },
+    {
+        id: 28,
+        category: "Số học máy tính",
+        question: "Trong phép cộng nhị phân: 1 + 1 + 1 bằng?",
+        options: [
+            { id: 'A', text: "11" },
+            { id: 'B', text: "01" },
+            { id: 'C', text: "Bằng 0 nhớ 1" },
+            { id: 'D', text: "Bằng 1 nhớ 1" }
+        ],
+        correctId: "D",
+        explanation: {
+            correct: "1 + 1 + 1 = 3 (thập phân). Số 3 trong nhị phân là 11 -> Viết 1 nhớ 1.",
+            incorrect: "Tổng là 3, không phải 2 (10) hay 1 (01)."
+        }
+    },
+    {
+        id: 29,
+        category: "Số học máy tính",
+        question: "Số bù 2 được tạo ra bằng cách...",
+        options: [
+            { id: 'A', text: "Lấy số bù 1 cộng thêm 1" },
+            { id: 'B', text: "Lấy số bù 1 trừ đi 1" },
+            { id: 'C', text: "Đảo bit số dương" },
+            { id: 'D', text: "Nhân đôi" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Quy tắc: Bù 2 = Bù 1 + 1 (tại bit thấp nhất).",
+            incorrect: "Đảo bit chỉ ra Bù 1. Phải cộng thêm 1 mới ra Bù 2."
+        }
+    },
+    {
+        id: 30,
+        category: "Lịch sử máy tính",
+        question: "Đặc trưng công nghệ của máy tính thế hệ thứ 3 là:",
+        options: [
+            { id: 'A', text: "Transistor" },
+            { id: 'B', text: "Integrated circuit (IC)" },
+            { id: 'C', text: "Vacuum tube" },
+            { id: 'D', text: "AI" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "Thế hệ 1: Đèn chân không. Thế hệ 2: Transistor. Thế hệ 3: Mạch tích hợp (IC).",
+            incorrect: "Transistor là thế hệ 2. Vacuum tube là thế hệ 1."
+        }
+    },
+    {
+        id: 31,
+        category: "Hệ đếm",
+        question: "Số nhị phân 01110011011011 đổi sang hệ 16 có giá trị là:",
+        options: [
+            { id: 'A', text: "1CDF" },
+            { id: 'B', text: "1CDB" },
+            { id: 'C', text: "2CDB" },
+            { id: 'D', text: "3CDB" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "Nhóm 4 bit: 0001 (1) - 1100 (C) - 1101 (D) - 1011 (B). Kết quả: 1CDB.",
+            incorrect: "Kiểm tra kỹ bảng mã Hex: 1011 là B, 1101 là D, 1100 là C."
+        }
+    },
+    {
+        id: 32,
+        category: "Số học máy tính",
+        question: "Biểu diễn số -35 (hệ 10) dưới dạng bù 2:",
+        options: [
+            { id: 'A', text: "11011100" },
+            { id: 'B', text: "11011111" },
+            { id: 'C', text: "11011110" },
+            { id: 'D', text: "11011101" }
+        ],
+        correctId: "D",
+        explanation: {
+            correct: "Bù 1 của 35 là 11011100. Cộng thêm 1: 11011100 + 1 = 11011101.",
+            incorrect: "Đáp án A là số bù 1. Bù 2 phải cộng thêm 1 đơn vị."
+        }
+    },
+    {
+        id: 33,
+        category: "Mạch Logic",
+        question: "Cho biểu thức logic Z = a + b + c. Chọn phát biểu đúng:",
+        options: [
+            { id: 'A', text: "Z = 0 khi a = b = c = 1" },
+            { id: 'B', text: "Z = 1 khi a = 0, b = 0, c = 1" },
+            { id: 'C', text: "Z = 0 khi có một đầu vào bằng 1" },
+            { id: 'D', text: "Z = 1 chỉ khi tất cả bằng 1" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "Đây là cổng OR 3 đầu vào. Z = 1 nếu có ÍT NHẤT một đầu vào là 1. Tại B, c=1 nên Z=1.",
+            incorrect: "Cổng OR chỉ bằng 0 khi TẤT CẢ đầu vào bằng 0."
+        }
+    },
+    {
+        id: 34,
+        category: "Mạch Logic",
+        question: "Cho biểu thức Z = NOT(A) + NOT(B). Đây là cổng logic nào?",
+        options: [
+            { id: 'A', text: "AND" },
+            { id: 'B', text: "NAND" },
+            { id: 'C', text: "NOR" },
+            { id: 'D', text: "XOR" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "Theo định luật De Morgan: A' + B' = (A.B)'. Đây chính là biểu thức của cổng NAND.",
+            incorrect: "NOR là (A+B)'. AND là A.B."
+        }
+    },
+    {
+        id: 35,
+        category: "Mạch Logic",
+        question: "Đầu ra cổng OR ở mức cao (1) khi nào?",
+        options: [
+            { id: 'A', text: "Khi tất cả đầu vào thấp (0)" },
+            { id: 'B', text: "Khi có đầu vào bất kỳ ở mức cao (1)" },
+            { id: 'C', text: "Chỉ khi tất cả đầu vào cao" },
+            { id: 'D', text: "Không bao giờ" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "Bản chất cổng OR (Hoặc) là chỉ cần một điều kiện đúng (1) thì kết quả sẽ đúng (1).",
+            incorrect: "Khi tất cả thấp (0) thì đầu ra mới là 0."
+        }
+    },
+    {
+        id: 36,
+        category: "Mạch Logic",
+        question: "Cho biểu thức logic Z = NOT(A) + NOT(B). Đây là biểu thức tương đương của cổng nào?",
+        options: [
+            { id: 'A', text: "AND" },
+            { id: 'B', text: "NAND" },
+            { id: 'C', text: "NOR" },
+            { id: 'D', text: "XOR" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "Áp dụng định luật De Morgan: NOT(A) + NOT(B) tương đương với NOT(A AND B). Đây chính là cổng NAND.",
+            incorrect: "Cổng NOR là NOT(A+B). Cổng AND là A*B."
+        }
+    },
+    {
+        id: 37,
+        category: "Mạch Logic",
+        question: "Cho biểu thức toán học Z = NOT(a + b + c). Giá trị của Z bằng 1 khi nào?",
+        options: [
+            { id: 'A', text: "Khi tất cả a, b, c đều bằng 0" },
+            { id: 'B', text: "Khi tất cả a, b, c đều bằng 1" },
+            { id: 'C', text: "Khi có ít nhất một đầu vào bằng 1" },
+            { id: 'D', text: "Không bao giờ xảy ra" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Đây là cổng NOR 3 đầu vào. Z chỉ bằng 1 (True) khi và chỉ khi TẤT CẢ đầu vào đều bằng 0 (False).",
+            incorrect: "Nếu có bất kỳ đầu vào nào bằng 1 thì tổng (a+b+c) = 1, khi đó NOT(1) = 0."
+        }
+    },
+    {
+        id: 38,
+        category: "Mạch Logic",
+        question: "Đầu ra của cổng NAND chỉ ở mức thấp (0) khi nào?",
+        options: [
+            { id: 'A', text: "Khi tất cả đầu vào đều ở mức cao (1)" },
+            { id: 'B', text: "Khi tất cả đầu vào đều ở mức thấp (0)" },
+            { id: 'C', text: "Khi có ít nhất một đầu vào mức thấp" },
+            { id: 'D', text: "Luôn luôn mức cao" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "NAND là đảo của AND. AND chỉ bằng 1 khi tất cả input là 1. Vậy NAND sẽ bằng 0 khi tất cả input là 1.",
+            incorrect: "Các trường hợp còn lại NAND đều cho ra 1."
+        }
+    },
+    {
+        id: 39,
+        category: "Hệ đếm",
+        question: "Hệ đếm nào sử dụng các ký tự: 0-9 và A, B, C, D, E, F?",
+        options: [
+            { id: 'A', text: "Hệ Nhị phân (Binary)" },
+            { id: 'B', text: "Hệ Bát phân (Octal)" },
+            { id: 'C', text: "Hệ Thập lục phân (Hexadecimal)" },
+            { id: 'D', text: "Hệ Thập phân (Decimal)" }
+        ],
+        correctId: "C",
+        explanation: {
+            correct: "Chính xác. Hệ Hexadecimal (cơ số 16) dùng 10 số và 6 chữ cái đầu tiên để biểu diễn giá trị 10-15.",
+            incorrect: "Hệ nhị phân chỉ có 0,1. Hệ bát phân chỉ có 0-7."
+        }
+    },
+    {
+        id: 40,
+        category: "Số học máy tính",
+        question: "Biểu diễn số thập phân -12 dưới dạng số bù 1 (8 bit):",
+        options: [
+            { id: 'A', text: "00001100" },
+            { id: 'B', text: "11110011" },
+            { id: 'C', text: "11110100" },
+            { id: 'D', text: "10001100" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "Bước 1: +12 = 00001100. Bước 2: Đảo tất cả các bit để có Bù 1 -> 11110011.",
+            incorrect: "Đáp án A là số dương 12. Đáp án C là số bù 2."
+        }
+    },
+    {
+        id: 41,
+        category: "Mạch Logic",
+        question: "Biểu thức toán học của cổng logic OR ba đầu vào A, B, C là:",
+        options: [
+            { id: 'A', text: "Z = A . B . C" },
+            { id: 'B', text: "Z = A + B + C" },
+            { id: 'C', text: "Z = NOT(A + B + C)" },
+            { id: 'D', text: "Z = A + B . C" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "Cổng OR thực hiện phép cộng logic (Logical Addition).",
+            incorrect: "A.B.C là cổng AND. NOT(...) là cổng NOR."
+        }
+    },
+    {
+        id: 42,
+        category: "Lịch sử máy tính",
+        question: "Đặc trưng công nghệ của máy tính thế hệ thứ 1 là gì?",
+        options: [
+            { id: 'A', text: "Transistor" },
+            { id: 'B', text: "Vi mạch (IC)" },
+            { id: 'C', text: "Đèn điện tử chân không (Vacuum Tube)" },
+            { id: 'D', text: "Trí tuệ nhân tạo" }
+        ],
+        correctId: "C",
+        explanation: {
+            correct: "Máy tính thế hệ 1 (như ENIAC) sử dụng hàng ngàn bóng đèn điện tử chân không, rất nóng và tốn điện.",
+            incorrect: "Transistor là thế hệ 2. IC là thế hệ 3."
+        }
+    },
+    {
+        id: 43,
+        category: "Số học máy tính",
+        question: "Hệ nhị phân được biểu diễn bởi các con số nào?",
+        options: [
+            { id: 'A', text: "1 và 2" },
+            { id: 'B', text: "0 và 1" },
+            { id: 'C', text: "0 đến 9" },
+            { id: 'D', text: "True và False" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "Hệ nhị phân (Binary) là ngôn ngữ cơ bản của máy tính, chỉ sử dụng hai trạng thái 0 và 1.",
+            incorrect: "Tuy máy tính hiểu là True/False nhưng về mặt con số biểu diễn thì là 0 và 1."
+        }
+    },
+    {
+        id: 44,
+        category: "Mạch Logic",
+        question: "Công nghệ CMOS sử dụng kết hợp hai loại Transistor nào?",
+        options: [
+            { id: 'A', text: "N-MOS và P-MOS" },
+            { id: 'B', text: "N-MOS và BJT" },
+            { id: 'C', text: "P-MOS và FET" },
+            { id: 'D', text: "Chỉ dùng N-MOS" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "CMOS (Complementary MOS) sử dụng cặp bổ sung N-MOS và P-MOS để giảm tiêu thụ điện năng.",
+            incorrect: "Các công nghệ khác ít phổ biến hơn trong vi xử lý hiện đại."
+        }
+    },
+    {
+        id: 45,
+        category: "Số học máy tính",
+        question: "Kết quả của phép cộng: 10101 (21) + 101 (5) trong hệ nhị phân?",
+        options: [
+            { id: 'A', text: "11010" },
+            { id: 'B', text: "10010" },
+            { id: 'C', text: "11110" },
+            { id: 'D', text: "11000" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "21 + 5 = 26. Đổi 26 sang nhị phân: 16 + 8 + 2 = 11010.",
+            incorrect: "Tính toán cẩn thận: 1+1=0 nhớ 1, 0+0+1(nhớ)=1, 1+1=0 nhớ 1..."
+        }
+    },
+    {
+        id: 46,
+        category: "Hệ đếm",
+        question: "Chuyển đổi số bát phân 166(8) sang dạng nhị phân:",
+        options: [
+            { id: 'A', text: "001 110 110" },
+            { id: 'B', text: "100 110 110" },
+            { id: 'C', text: "001 101 101" },
+            { id: 'D', text: "111 110 110" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Quy tắc: 1 chữ số bát phân = 3 bit nhị phân. 1->001, 6->110, 6->110. Ghép lại: 001110110.",
+            incorrect: "Cẩn thận nhầm lẫn mã của số 6 (110) với số 5 (101)."
+        }
+    },
+    {
+        id: 47,
+        category: "Hệ đếm",
+        question: "Chuyển đổi số Hex 2CF(16) sang dạng nhị phân:",
+        options: [
+            { id: 'A', text: "0010 1100 1111" },
+            { id: 'B', text: "0010 1111 1100" },
+            { id: 'C', text: "0011 1100 1111" },
+            { id: 'D', text: "1010 1100 1111" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Quy tắc: 1 chữ số Hex = 4 bit nhị phân. 2->0010, C(12)->1100, F(15)->1111.",
+            incorrect: "Hãy nhớ: C tương ứng 12 (1100) và F tương ứng 15 (1111)."
+        }
+    },
+    {
+        id: 48,
+        category: "Hệ đếm",
+        question: "Số thập phân 175(10) chuyển sang nhị phân là:",
+        options: [
+            { id: 'A', text: "10101111" },
+            { id: 'B', text: "10111111" },
+            { id: 'C', text: "11001111" },
+            { id: 'D', text: "10101011" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "175 = 128 + 32 + 8 + 4 + 2 + 1. Tương ứng các bit 1 tại vị trí đó: 10101111.",
+            incorrect: "Phép chia liên tiếp cho 2 sẽ cho kết quả dư: 1, 1, 1, 1, 0, 1, 0, 1 (đọc ngược lại)."
+        }
+    },
+    {
+        id: 49,
+        category: "Hệ đếm",
+        question: "Chuyển số Hex CBBH sang nhị phân:",
+        options: [
+            { id: 'A', text: "1100 1011 1011" },
+            { id: 'B', text: "1011 1100 1011" },
+            { id: 'C', text: "1100 1010 1010" },
+            { id: 'D', text: "1111 1011 1011" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "C=12 (1100), B=11 (1011). Vậy CBB = 1100 1011 1011.",
+            incorrect: "Kiểm tra kỹ giá trị của B (11) là 1011, không phải 1010 (10)."
+        }
+    },
+    {
+        id: 50,
+        category: "Mạch Logic",
+        question: "Biểu thức toán học của cổng logic AND hai đầu vào A, B là:",
+        options: [
+            { id: 'A', text: "Z = A . B" },
+            { id: 'B', text: "Z = A + B" },
+            { id: 'C', text: "Z = A - B" },
+            { id: 'D', text: "Z = NOT(A)" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Cổng AND thực hiện phép nhân logic (Logical Multiplication).",
+            incorrect: "A + B là cổng OR."
+        }
+    },
+    {
+        id: 51,
+        category: "Lịch sử máy tính",
+        question: "Transistor là đặc trưng công nghệ của thế hệ máy tính thứ mấy?",
+        options: [
+            { id: 'A', text: "Thứ 1" },
+            { id: 'B', text: "Thứ 2" },
+            { id: 'C', text: "Thứ 3" },
+            { id: 'D', text: "Thứ 4" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "Thế hệ 2 thay thế đèn chân không bằng Transistor nhỏ gọn và bền hơn.",
+            incorrect: "Thế hệ 1 là Đèn chân không. Thế hệ 3 là IC."
+        }
+    },
+    {
+        id: 52,
+        category: "Tin học đại cương",
+        question: "Thiết bị được sử dụng để đưa dữ liệu vào hệ thống máy tính được gọi chung là:",
+        options: [
+            { id: 'A', text: "Thiết bị Nhập (Input Device)" },
+            { id: 'B', text: "Thiết bị Xuất (Output Device)" },
+            { id: 'C', text: "Bộ xử lý trung tâm (CPU)" },
+            { id: 'D', text: "Bộ nhớ (Memory)" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Thiết bị nhập (Bàn phím, chuột, scan...) dùng để đưa thông tin vào máy tính xử lý.",
+            incorrect: "Thiết bị xuất dùng để hiển thị kết quả ra bên ngoài."
+        }
+    },
+    {
+        id: 53,
+        category: "Số học máy tính",
+        question: "Kết quả của phép cộng nhị phân: 101010111 + 1010101111",
+        options: [
+            { id: 'A', text: "10000000110" },
+            { id: 'B', text: "1111010101" },
+            { id: 'C', text: "10000010110" },
+            { id: 'D', text: "1011110000" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Thực hiện cộng từ phải sang trái, nhớ 1 khi tổng >= 2. Kết quả là 10000000110.",
+            incorrect: "Đây là phép tính dài, cần cẩn thận ở các bước nhớ (carry)."
+        }
+    },
+    {
+        id: 54,
+        category: "Mạch Logic",
+        question: "Trong cấu trúc mạch CMOS, nếu có Transistor N-MOS thì thường đi kèm với loại nào?",
+        options: [
+            { id: 'A', text: "P-MOS" },
+            { id: 'B', text: "BJT" },
+            { id: 'C', text: "FET" },
+            { id: 'D', text: "Diode" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Trong sơ đồ mạch CMOS, số lượng N-MOS và P-MOS thường bằng nhau và hoạt động bổ trợ cho nhau.",
+            incorrect: "CMOS là viết tắt của Complementary Metal-Oxide-Semiconductor (Bổ sung N và P)."
+        }
+    },
+    {
+        id: 55,
+        category: "Kiến trúc máy tính",
+        question: "Bảng mã ASCII mở rộng (8 bit) có thể biểu diễn tối đa bao nhiêu ký tự?",
+        options: [
+            { id: 'A', text: "128" },
+            { id: 'B', text: "256" },
+            { id: 'C', text: "1024" },
+            { id: 'D', text: "65536" }
+        ],
+        correctId: "B",
+        explanation: {
+            correct: "2 mũ 8 = 256. Bảng mã ASCII chuẩn (7 bit) là 128, mở rộng (8 bit) là 256.",
+            incorrect: "65536 là chuẩn Unicode (16 bit)."
+        }
+    },
+    {
+        id: 56,
+        category: "Số học máy tính",
+        question: "Biểu thức bù 2 của số nhị phân N được tính theo công thức:",
+        options: [
+            { id: 'A', text: "NOT(N) + 1" },
+            { id: 'B', text: "NOT(N) - 1" },
+            { id: 'C', text: "N + 1" },
+            { id: 'D', text: "NOT(N + 1)" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Lấy bù 1 (đảo bit - NOT) rồi cộng thêm 1 là cách tạo bù 2.",
+            incorrect: "Các công thức còn lại không chính xác với định nghĩa số bù 2."
+        }
+    },
+    {
+        id: 57,
+        category: "Mạch Logic",
+        question: "Cổng XOR (Exclusive OR) có đầu ra bằng 1 khi nào?",
+        options: [
+            { id: 'A', text: "Khi hai đầu vào khác nhau" },
+            { id: 'B', text: "Khi hai đầu vào giống nhau" },
+            { id: 'C', text: "Khi tất cả đầu vào bằng 1" },
+            { id: 'D', text: "Khi tất cả đầu vào bằng 0" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "XOR (Hoặc loại trừ) trả về 1 nếu A khác B (1-0 hoặc 0-1).",
+            incorrect: "Nếu giống nhau (0-0 hoặc 1-1) XOR sẽ trả về 0."
+        }
+    },
+    {
+        id: 58,
+        category: "Kiến trúc máy tính",
+        question: "Trong chu trình xử lý của CPU, bước nào diễn ra đầu tiên?",
+        options: [
+            { id: 'A', text: "Fetch (Đọc lệnh)" },
+            { id: 'B', text: "Decode (Giải mã)" },
+            { id: 'C', text: "Execute (Thực thi)" },
+            { id: 'D', text: "Store (Lưu trữ)" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Chu trình lệnh: Fetch -> Decode -> Execute. CPU phải lấy lệnh từ RAM trước mới làm được việc khác.",
+            incorrect: "Giải mã và thực thi diễn ra sau khi đã lấy được lệnh."
+        }
+    },
+    {
+        id: 59,
+        category: "Mạch Logic",
+        question: "Mạch hợp (Combinational Logic) có đặc điểm gì?",
+        options: [
+            { id: 'A', text: "Đầu ra chỉ phụ thuộc vào đầu vào hiện tại" },
+            { id: 'B', text: "Có khả năng nhớ trạng thái trước đó" },
+            { id: 'C', text: "Sử dụng xung nhịp (Clock)" },
+            { id: 'D', text: "Lưu trữ dữ liệu lâu dài" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Mạch tổ hợp (như cổng AND, OR, bộ cộng) không có bộ nhớ, đầu ra thay đổi ngay khi đầu vào đổi.",
+            incorrect: "Mạch có nhớ là Mạch tuần tự (Sequential Logic) như Flip-Flop."
+        }
+    },
+    {
+        id: 60,
+        category: "Số học máy tính",
+        question: "Số thực dấu chấm động (Floating Point) dùng để giải quyết vấn đề gì?",
+        options: [
+            { id: 'A', text: "Biểu diễn các số rất lớn hoặc rất nhỏ" },
+            { id: 'B', text: "Tăng tốc độ xử lý số nguyên" },
+            { id: 'C', text: "Mã hóa văn bản chính xác hơn" },
+            { id: 'D', text: "Tiết kiệm dung lượng ổ cứng" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Dấu chấm động cho phép dời dấu phẩy để biểu diễn phạm vi giá trị rộng lớn (từ vi mô đến vĩ mô).",
+            incorrect: "Số nguyên dùng Int. Mã hóa văn bản dùng ASCII/Unicode."
+        }
+    },
+    {
+        id: 61,
+        category: "Mạch Logic",
+        question: "Cổng NOT (Cổng đảo) có bao nhiêu đầu vào?",
+        options: [
+            { id: 'A', text: "1" },
+            { id: 'B', text: "2" },
+            { id: 'C', text: "3" },
+            { id: 'D', text: "Tùy ý" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Cổng NOT là cổng đơn giản nhất, chỉ nhận 1 tín hiệu vào và đảo ngược nó (0 thành 1, 1 thành 0).",
+            incorrect: "Các cổng khác như AND, OR mới có từ 2 đầu vào trở lên."
+        }
+    },
+    {
+        id: 62,
+        category: "Mạch Logic",
+        question: "Cho biểu thức logic: x = A.B + NOT(A).B. Rút gọn biểu thức này ta được:",
+        options: [
+            { id: 'A', text: "x = B" },
+            { id: 'B', text: "x = A" },
+            { id: 'C', text: "x = 1" },
+            { id: 'D', text: "x = 0" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Đặt B làm nhân tử chung: x = B(A + NOT(A)). Vì (A + NOT(A)) luôn bằng 1, nên x = B.1 = B.",
+            incorrect: "Đây là bài toán rút gọn cơ bản dùng định luật phân phối."
+        }
+    },
+    {
+        id: 63,
+        category: "Mạch Logic",
+        question: "Biểu thức Z = NOT(A + B) là đại diện của cổng logic nào?",
+        options: [
+            { id: 'A', text: "NOR" },
+            { id: 'B', text: "NAND" },
+            { id: 'C', text: "XOR" },
+            { id: 'D', text: "AND" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "NOR là viết tắt của NOT OR. Biểu thức là đảo của tổng (A+B).",
+            incorrect: "NAND là đảo của tích (A.B)."
+        }
+    },
+    {
+        id: 64,
+        category: "Mạch Logic",
+        question: "Trong bảng chân trị (Truth Table), cổng NAND có đầu ra bằng 0 khi nào?",
+        options: [
+            { id: 'A', text: "Chỉ khi tất cả đầu vào bằng 1" },
+            { id: 'B', text: "Chỉ khi tất cả đầu vào bằng 0" },
+            { id: 'C', text: "Khi đầu vào khác nhau" },
+            { id: 'D', text: "Luôn luôn bằng 1" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "NAND = NOT AND. Cổng AND chỉ bằng 1 khi tất cả là 1. Vậy NAND sẽ bằng 0 khi tất cả là 1.",
+            incorrect: "Mọi trường hợp còn lại (có ít nhất một số 0) thì NAND đều ra 1."
+        }
+    },
+    {
+        id: 65,
+        category: "Cấu trúc máy tính",
+        question: "Trong cấu tạo vi mạch, để tạo ra cổng Inverter (NOT) công nghệ CMOS, cần bao nhiêu transistor?",
+        options: [
+            { id: 'A', text: "2 (1 PMOS và 1 NMOS)" },
+            { id: 'B', text: "4 (2 PMOS và 2 NMOS)" },
+            { id: 'C', text: "1 BJT" },
+            { id: 'D', text: "6 Transistor" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Cổng NOT đơn giản nhất trong CMOS gồm 1 PMOS (kéo lên nguồn) và 1 NMOS (kéo xuống đất).",
+            incorrect: "4 Transistor thường dùng cho cổng NAND/NOR 2 đầu vào."
+        }
+    },
+    {
+        id: 66,
+        category: "Mạch Logic",
+        question: "Cho mạch logic có đầu ra Z. Nếu Z=1 chỉ khi A=0 và B=0. Đây là cổng gì?",
+        options: [
+            { id: 'A', text: "NOR" },
+            { id: 'B', text: "OR" },
+            { id: 'C', text: "NAND" },
+            { id: 'D', text: "AND" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Cổng OR: 0+0=0. Cổng NOR (đảo của OR): 0+0 ra 1. Các trường hợp khác NOR đều ra 0.",
+            incorrect: "Cổng AND/NAND không có tính chất này."
+        }
+    },
+    {
+        id: 67,
+        category: "Mạch Logic",
+        question: "Biểu thức logic nào sau đây luôn đúng (Tautology)?",
+        options: [
+            { id: 'A', text: "A + NOT(A) = 1" },
+            { id: 'B', text: "A . NOT(A) = 1" },
+            { id: 'C', text: "A + 1 = A" },
+            { id: 'D', text: "A . 0 = A" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Một biến hoặc là 0, hoặc là 1. Cộng đảo của chính nó luôn luôn ra 1 (Đúng).",
+            incorrect: "A . NOT(A) luôn bằng 0. A + 1 luôn bằng 1."
+        }
+    },
+    {
+        id: 68,
+        category: "Mạch Logic",
+        question: "Nếu đầu vào A=1, B=1. Cổng XOR sẽ cho ra kết quả gì?",
+        options: [
+            { id: 'A', text: "0" },
+            { id: 'B', text: "1" },
+            { id: 'C', text: "Không xác định" },
+            { id: 'D', text: "High Impedance" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "XOR (Exclusive OR) chỉ bằng 1 khi hai đầu vào KHÁC nhau. Nếu giống nhau (cùng 1) thì ra 0.",
+            incorrect: "Đừng nhầm với cổng OR (1+1=1). XOR là 'Hoặc loại trừ'."
+        }
+    },
+    {
+        id: 69,
+        category: "Mạch Logic",
+        question: "Ký hiệu đại số Bool của phép toán logic 'Nhân' (AND) là:",
+        options: [
+            { id: 'A', text: "Dấu chấm (.)" },
+            { id: 'B', text: "Dấu cộng (+)" },
+            { id: 'C', text: "Dấu gạch ngang trên đầu" },
+            { id: 'D', text: "Dấu cộng trong vòng tròn" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Phép AND tương ứng với phép nhân logic. Ví dụ: A . B",
+            incorrect: "Dấu cộng là OR. Gạch ngang là NOT. Cộng trong vòng tròn là XOR."
+        }
+    },
+    {
+        id: 70,
+        category: "Kiến trúc máy tính",
+        question: "Mạch tích hợp (IC) bao gồm hàng triệu linh kiện nào?",
+        options: [
+            { id: 'A', text: "Transistor" },
+            { id: 'B', text: "Tụ điện" },
+            { id: 'C', text: "Cuộn cảm" },
+            { id: 'D', text: "Bóng đèn" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Transistor là thành phần cơ bản nhất, đóng vai trò công tắc đóng ngắt trong CPU hiện đại.",
+            incorrect: "Các linh kiện khác có nhưng số lượng ít hơn rất nhiều so với Transistor."
+        }
+    },
+    {
+        id: 71,
+        category: "Thực hành Logic",
+        question: "Khi thiết kế mạch số, trạng thái 'High' thường tương ứng với mức điện áp nào?",
+        options: [
+            { id: 'A', text: "5V hoặc 3.3V (Logic 1)" },
+            { id: 'B', text: "0V (GND)" },
+            { id: 'C', text: "-5V" },
+            { id: 'D', text: "12V" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Trong chuẩn TTL/CMOS, mức điện áp dương (VCC) biểu diễn logic 1.",
+            incorrect: "0V thường biểu diễn logic 0 (Low)."
+        }
+    },
+    {
+        id: 72,
+        category: "Logic học",
+        question: "Phát biểu nào sau đây là định luật De Morgan?",
+        options: [
+            { id: 'A', text: "NOT(A . B) = NOT(A) + NOT(B)" },
+            { id: 'B', text: "NOT(A + B) = NOT(A) + NOT(B)" },
+            { id: 'C', text: "A + B = B + A" },
+            { id: 'D', text: "A . (B + C) = A.B + A.C" }
+        ],
+        correctId: "A",
+        explanation: {
+            correct: "Định luật De Morgan: 'Phủ định của một tích bằng tổng các phủ định'.",
+            incorrect: "Đây là công cụ cực quan trọng để biến đổi giữa cổng NAND và NOR."
+        }
+    },
+                { 
+                id: 73, 
+                category: "Hệ đếm", 
+                question: "Chuyển đổi số: 166(8) và 2CF(16) sang nhị phân:", 
+                options: [
+                    { id: 'A', text: "001110110 và 001011001111" }, 
+                    { id: 'B', text: "111110110 và 101011001111" }, 
+                    { id: 'C', text: "001110110 và 001011111100" }, 
+                    { id: 'D', text: "101110110 và 110011001111" }
+                ], 
+                correctId: "A", 
+                explanation: { 
+                    correct: "166(8): 1->001, 6->110. Ghép: 001110110. | 2CF(16): 2->0010, C->1100, F->1111.", 
+                    incorrect: "Quy tắc: Hệ 8 tách 3 bit, Hệ 16 tách 4 bit." 
+                } 
+            },
+            { 
+                id: 74, 
+                category: "Hệ đếm", 
+                question: "Chuyển số 175(10) sang nhị phân:", 
+                options: [
+                    { id: 'A', text: "10101111" }, 
+                    { id: 'B', text: "10111111" }, 
+                    { id: 'C', text: "11001111" }, 
+                    { id: 'D', text: "10101011" }
+                ], 
+                correctId: "A", 
+                explanation: { 
+                    correct: "175 = 128 + 32 + 8 + 4 + 2 + 1 -> 10101111.", 
+                    incorrect: "Chia liên tiếp cho 2 và lấy số dư ngược từ dưới lên." 
+                } 
+            },
+            { 
+                id: 75, 
+                category: "Hệ đếm", 
+                question: "Chuyển số Hex CBB(16) sang nhị phân:", 
+                options: [
+                    { id: 'A', text: "1100 1011 1011" }, 
+                    { id: 'B', text: "1100 1010 1010" }, 
+                    { id: 'C', text: "1011 1100 1011" }, 
+                    { id: 'D', text: "1100 1101 1101" }
+                ], 
+                correctId: "A", 
+                explanation: { 
+                    correct: "C(12) = 1100. B(11) = 1011. Ghép lại: 1100 1011 1011.", 
+                    incorrect: "Lưu ý B là 11 (1011), không phải A(10) hay D(13)." 
+                } 
+            },
+            { 
+                id: 76, 
+                category: "Mạch Logic", 
+                question: "Biểu thức toán học của cổng OR và cổng AND (2 đầu vào A, B) lần lượt là:", 
+                options: [
+                    { id: 'A', text: "Z=A+B và Z=A.B" }, 
+                    { id: 'B', text: "Z=A.B và Z=A+B" }, 
+                    { id: 'C', text: "Z=A-B và Z=A/B" }, 
+                    { id: 'D', text: "Z=A+B và Z=A⊕B" }
+                ], 
+                correctId: "A", 
+                explanation: { 
+                    correct: "OR tương ứng phép cộng logic (+). AND tương ứng phép nhân logic (.).", 
+                    incorrect: "Đáp án B bị ngược thứ tự." 
+                } 
+            },
+            { 
+                id: 77, 
+                category: "Mạch Logic", 
+                question: "(Câu hỏi hình ảnh) Sơ đồ mạch logic có đầu ra thấp (0) chỉ khi tất cả đầu vào cao (1) có biểu thức là:", 
+                options: [
+                    { id: 'A', text: "Z = NOT(A.B)" }, 
+                    { id: 'B', text: "Z = A + B" }, 
+                    { id: 'C', text: "Z = A . B" }, 
+                    { id: 'D', text: "Z = A ⊕ B" }
+                ], 
+                correctId: "A", 
+                explanation: { 
+                    correct: "Đây là đặc tính của cổng NAND (Not AND). Biểu thức là NOT(A.B).", 
+                    incorrect: "Hình ảnh thường là cổng NAND cho câu hỏi dạng này." 
+                } 
+            },
+            { 
+                id: 78, 
+                category: "Mạch Logic", 
+                question: "(Câu hỏi hình ảnh) Nếu A=1, B=1 đi qua cổng XOR thì đầu ra D bằng mấy?", 
+                options: [
+                    { id: 'A', text: "0" }, 
+                    { id: 'B', text: "1" }, 
+                    { id: 'C', text: "Không xác định" }, 
+                    { id: 'D', text: "High Z" }
+                ], 
+                correctId: "A", 
+                explanation: { 
+                    correct: "XOR (Exclusive OR) trả về 0 nếu hai đầu vào GIỐNG nhau (cùng là 1).", 
+                    incorrect: "Chỉ khi khác nhau (1-0 hoặc 0-1) XOR mới ra 1." 
+                } 
+            },
+            { 
+                id: 79, 
+                category: "Mạch Logic", 
+                question: "Cho bảng sự thật: Đầu ra Z=1 khi (A=0,B=0) hoặc (A=1,B=1). Đây là cổng gì?", 
+                options: [
+                    { id: 'A', text: "XNOR (Tương đương)" }, 
+                    { id: 'B', text: "XOR" }, 
+                    { id: 'C', text: "AND" }, 
+                    { id: 'D', text: "OR" }
+                ], 
+                correctId: "A", 
+                explanation: { 
+                    correct: "Ngược với XOR. XNOR bằng 1 khi hai đầu vào giống nhau.", 
+                    incorrect: "XOR bằng 1 khi khác nhau." 
+                } 
+            },
+            { 
+                id: 80, 
+                category: "Phần cứng", 
+                question: "Kể tên hai hãng sản xuất vi xử lý (CPU) máy tính phổ biến nhất:", 
+                options: [
+                    { id: 'A', text: "Intel và AMD" }, 
+                    { id: 'B', text: "Samsung và Nokia" }, 
+                    { id: 'C', text: "Sony và LG" }, 
+                    { id: 'D', text: "Microsoft và Google" }
+                ], 
+                correctId: "A", 
+                explanation: { 
+                    correct: "Intel (Core i...) và AMD (Ryzen...) là 2 hãng thống trị thị trường CPU PC/Laptop.", 
+                    incorrect: "Các hãng khác chủ yếu làm điện thoại hoặc phần mềm." 
+                } 
+            },
+            { 
+                id: 81, 
+                category: "Lịch sử", 
+                question: "Transistor là đặc trưng công nghệ của thế hệ máy tính thứ mấy?", 
+                options: [
+                    { id: 'A', text: "Thế hệ 2" }, 
+                    { id: 'B', text: "Thế hệ 1" }, 
+                    { id: 'C', text: "Thế hệ 3" }, 
+                    { id: 'D', text: "Thế hệ 4" }
+                ], 
+                correctId: "A", 
+                explanation: { 
+                    correct: "Thế hệ 2 (1956-1963) sử dụng Transistor thay cho đèn chân không.", 
+                    incorrect: "Gen 1: Đèn chân không. Gen 3: IC." 
+                } 
+            },
+            { 
+                id: 82, 
+                category: "Tin học", 
+                question: "Thiết bị dùng để đưa dữ liệu VÀO hệ thống gọi là:", 
+                options: [
+                    { id: 'A', text: "Thiết bị Nhập (Input Device)" }, 
+                    { id: 'B', text: "Thiết bị Xuất (Output Device)" }, 
+                    { id: 'C', text: "Thiết bị Lưu trữ" }, 
+                    { id: 'D', text: "Bộ xử lý" }
+                ], 
+                correctId: "A", 
+                explanation: { 
+                    correct: "Bàn phím, chuột, microphone, máy scan...", 
+                    incorrect: "Màn hình, máy in là thiết bị Xuất." 
+                } 
+            },
+            { 
+                id: 83, 
+                category: "Số học (Tự luận)", 
+                question: "Biểu diễn số thực 13.5 dưới dạng chấm động 32 bit (IEEE 754):", 
+                options: [
+                    { id: 'A', text: "0 10000010 1011000..." }, 
+                    { id: 'B', text: "1 10000010 1011000..." }, 
+                    { id: 'C', text: "0 10000011 1011000..." }, 
+                    { id: 'D', text: "0 01111101 1011000..." }
+                ], 
+                correctId: "A", 
+                explanation: { 
+                    correct: "13.5 = 1101.1 = 1.1011 x 2^3. Mũ: 127+3=130 (10000010). Mantissa: 101100...", 
+                    incorrect: "Bit đầu là 0 (dương). Mũ phải cộng bias 127." 
+                } 
+            },
+            { 
+                id: 84, 
+                category: "Số học (Tự luận)", 
+                question: "Tìm số Bù 2 của -50 (dùng 8 bit):", 
+                options: [
+                    { id: 'A', text: "11001110" }, 
+                    { id: 'B', text: "11001101" }, 
+                    { id: 'C', text: "00110010" }, 
+                    { id: 'D', text: "11001111" }
+                ], 
+                correctId: "A", 
+                explanation: { 
+                    correct: "+50 = 00110010. Bù 1 (đảo): 11001101. Bù 2 (+1): 11001110.", 
+                    incorrect: "Bù 1 là 11001101, phải cộng thêm 1 nữa mới ra Bù 2." 
+                }
+    }
+];
+    
+
+
+        // State Management
+        let deck = JSON.parse(localStorage.getItem('anki_deck')) || [...INITIAL_DECK];
+        let currentCardIndex = parseInt(localStorage.getItem('anki_index')) || 0;
+        let sessionStats = JSON.parse(localStorage.getItem('anki_stats')) || { correct: 0, total: 0 };
+        let showExplanation = false;
+        let selectedOption = null;
+
+        // Init App
+        function init() {
+            lucide.createIcons();
+            render();
+            
+            // File input listener
+            document.getElementById('fileInput').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const data = JSON.parse(ev.target.result);
+                        if (data.deck) {
+                            if(confirm("Nhập dữ liệu mới? Dữ liệu hiện tại sẽ bị ghi đè.")) {
+                                deck = data.deck;
+                                currentCardIndex = data.currentCardIndex;
+                                sessionStats = data.sessionStats;
+                                saveData();
+                                resetView();
+                                render();
+                                alert("Nhập thành công!");
+                            }
+                        }
+                    } catch (err) {
+                        alert("Lỗi đọc file!");
+                    }
+                };
+                reader.readAsText(file);
+                e.target.value = null; // Reset input
+            });
+        }
+
+        function saveData() {
+            localStorage.setItem('anki_deck', JSON.stringify(deck));
+            localStorage.setItem('anki_index', currentCardIndex);
+            localStorage.setItem('anki_stats', JSON.stringify(sessionStats));
+        }
+
+        function render() {
+            if (deck.length === 0) {
+                document.getElementById('card-question').innerText = "Đã hết câu hỏi!";
+                return;
+            }
+
+            const card = deck[currentCardIndex];
+            
+            // Update Stats
+            document.getElementById('progress-text').innerText = `${currentCardIndex + 1} / ${deck.length}`;
+            document.getElementById('score-correct').innerText = sessionStats.correct;
+            document.getElementById('score-wrong').innerText = sessionStats.total - sessionStats.correct;
+
+            // Render Question
+            document.getElementById('card-category').innerHTML = `<i data-lucide="award" class="w-4 h-4"></i> ${card.category}`;
+            document.getElementById('card-question').innerText = card.question;
+
+            // Render Options
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            card.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = `w-full p-4 pl-5 text-left rounded-2xl transition-all duration-300 flex items-center justify-between group relative overflow-hidden backdrop-blur-md border ${getOptionStyle(opt.id, card.correctId)}`;
+                if (!showExplanation) {
+                    btn.classList.add('hover:scale-[1.02]', 'active:scale-[0.98]');
+                    btn.onclick = () => handleSelect(opt.id, card.correctId);
+                } else {
+                    btn.disabled = true;
+                }
+
+                // Inner content
+                let iconHtml = '';
+                if (showExplanation) {
+                    if (opt.id === card.correctId) iconHtml = `<i data-lucide="check-circle" class="w-6 h-6 text-green-500 drop-shadow-sm"></i>`;
+                    else if (opt.id === selectedOption && selectedOption !== card.correctId) iconHtml = `<i data-lucide="x-circle" class="w-6 h-6 text-red-500 drop-shadow-sm"></i>`;
+                }
+
+                btn.innerHTML = `
+                    <div class="absolute inset-0 bg-gradient-to-b from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                    <div class="flex items-center gap-5 relative z-10">
+                        <span class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border transition-colors shadow-sm ${getBadgeStyle(opt.id, card.correctId)}">
+                            ${opt.id}
+                        </span>
+                        <span class="font-medium text-lg tracking-wide">${opt.text}</span>
+                    </div>
+                    <div class="relative z-10">${iconHtml}</div>
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            // Render Explanation
+            const expSection = document.getElementById('explanation-section');
+            const ratingBar = document.getElementById('rating-bar');
+            
+            if (showExplanation) {
+                expSection.classList.remove('hidden');
+                ratingBar.classList.remove('hidden');
+                
+                const isCorrect = selectedOption === card.correctId;
+                const resultHeader = document.getElementById('result-header');
+                if (isCorrect) {
+                    resultHeader.className = "mb-6 flex items-center gap-3 font-black text-xl tracking-tight text-green-600";
+                    resultHeader.innerHTML = `<div class="p-1.5 bg-green-100 rounded-full border border-green-200"><i data-lucide="check-circle" class="w-5 h-5"></i></div> <span>CHÍNH XÁC!</span>`;
+                } else {
+                    resultHeader.className = "mb-6 flex items-center gap-3 font-black text-xl tracking-tight text-red-600";
+                    resultHeader.innerHTML = `<div class="p-1.5 bg-red-100 rounded-full border border-red-200"><i data-lucide="x-circle" class="w-5 h-5"></i></div> <span>SAI RỒI!</span>`;
+                }
+
+                document.getElementById('explanation-correct').innerText = card.explanation.correct;
+                document.getElementById('explanation-incorrect').innerText = card.explanation.incorrect;
+            } else {
+                expSection.classList.add('hidden');
+                ratingBar.classList.add('hidden');
+            }
+
+            lucide.createIcons(); // Refresh icons
+        }
+
+        function handleSelect(id, correctId) {
+            if (showExplanation) return;
+            selectedOption = id;
+            showExplanation = true;
+            
+            if (id === correctId) {
+                sessionStats.correct++;
+            }
+            sessionStats.total++;
+            saveData();
+            render();
+        }
+
+        function handleRating(difficulty) {
+            const currentCard = deck[currentCardIndex];
+            
+            if (difficulty === 'again' || difficulty === 'hard') {
+                // Copy current card and push to end with new ID (simulate re-queue)
+                const retryCard = {...currentCard, id: Date.now()};
+                deck.push(retryCard);
+            }
+
+            // Move next
+            if (currentCardIndex < deck.length - 1) {
+                currentCardIndex++;
+                resetView();
+                saveData();
+                render();
+            } else {
+                alert(`🎉 Hoàn thành phiên ôn tập!\nKết quả: ${sessionStats.correct}/${sessionStats.total}`);
+                handleReset(); // Auto reset or stay
+            }
+        }
+
+        function resetView() {
+            showExplanation = false;
+            selectedOption = null;
+        }
+
+        function resetApp() {
+            if (confirm("Bạn có chắc muốn xóa dữ liệu và học lại từ đầu?")) {
+                deck = [...INITIAL_DECK];
+                currentCardIndex = 0;
+                sessionStats = { correct: 0, total: 0 };
+                resetView();
+                saveData();
+                render();
+            }
+        }
+
+        function exportData() {
+            const data = { deck, currentCardIndex, sessionStats, exportedAt: new Date().toISOString() };
+            const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `anki-data-${new Date().toLocaleDateString('vi-VN').replace(/\//g,'-')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // Helper Styles
+        function getOptionStyle(id, correctId) {
+            if (!showExplanation) {
+                return selectedOption === id 
+                    ? "bg-blue-50 border-blue-400 text-blue-800 shadow-[0_4px_12px_rgba(59,130,246,0.2)]"
+                    : "bg-white/60 hover:bg-white/90 border-white/40 text-gray-700 hover:text-gray-900 hover:shadow-md";
+            }
+            if (id === correctId) return "bg-green-50 border-green-500 text-green-800 shadow-[0_0_20px_rgba(74,222,128,0.3)]";
+            if (id === selectedOption) return "bg-red-50 border-red-500 text-red-800 shadow-[0_0_20px_rgba(248,113,113,0.3)]";
+            return "bg-gray-50/50 border-gray-100 text-gray-400 opacity-60";
+        }
+
+        function getBadgeStyle(id, correctId) {
+            if (!showExplanation) {
+                return selectedOption === id
+                    ? "bg-white border-blue-400 text-blue-600"
+                    : "bg-white border-gray-200 text-gray-500 group-hover:border-indigo-300 group-hover:text-indigo-600";
+            }
+            if (id === correctId) return "bg-green-500 border-green-400 text-white shadow-green-200";
+            if (id === selectedOption) return "bg-red-500 border-red-400 text-white shadow-red-200";
+            return "bg-white border-gray-200 text-gray-400";
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>
